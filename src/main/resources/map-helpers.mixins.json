@@ -1,0 +1,12 @@
+{
+	"required": true,
+	"minVersion": "0.8",
+	"package": "com.likesdinosaurs.maphelpers.mixin",
+	"compatibilityLevel": "JAVA_17",
+	"mixins": [],
+	"client": ["ItemFrameEntitySneakUse"],
+	"server": ["ItemFrameEntitySneakUse"],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}
