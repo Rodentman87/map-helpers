@@ -3,12 +3,15 @@ package com.likesdinosaurs.maphelpers.mixin;
 import java.util.List;
 
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.decoration.AbstractDecorationEntity;
 import net.minecraft.entity.decoration.ItemFrameEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.FilledMapItem;
@@ -21,24 +24,28 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
 import net.minecraft.world.event.GameEvent;
 
 @Mixin(ItemFrameEntity.class)
-public class ItemFrameEntitySneakUse {
-	private static final float ninetyDeg = (float) Math.PI / 2;
+public abstract class ItemFrameEntitySneakUse extends AbstractDecorationEntity {
+	protected ItemFrameEntitySneakUse(EntityType<? extends AbstractDecorationEntity> entityType, World world) {
+		super(entityType, world);
+	}
 
 	@Inject(at = @At("HEAD"), method = "interact(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/util/Hand;)Lnet/minecraft/util/ActionResult;", cancellable = true)
-	public void interact(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> info) {
+	public void handleMapPlacement(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> info) {
 		if (player.world.isClient) {
 			return;
 		}
 		ItemStack itemStack = player.getStackInHand(hand);
 		if (itemStack.isOf(Items.FILLED_MAP) && player.isSneaking()) {
-			if (((ItemFrameEntity) (Object) this).getHeldItemStack().isOf(Items.FILLED_MAP)) {
+			if (this.getHeldItemStack().isOf(Items.FILLED_MAP)) {
 				// Get the map ids
 				int handMapId = FilledMapItem.getMapId(itemStack);
-				int frameMapId = FilledMapItem.getMapId(((ItemFrameEntity) (Object) this).getHeldItemStack());
+				int frameMapId = FilledMapItem.getMapId(this.getHeldItemStack());
 
 				// If they're the same, yell at the player
 				if (handMapId == frameMapId) {
@@ -76,13 +83,12 @@ public class ItemFrameEntitySneakUse {
 
 				Vec3d offset = new Vec3d(xMapDiff, 0, zMapDiff);
 
-				Vec3d pos = ((ItemFrameEntity) (Object) this).getPos();
+				Vec3d pos = this.getPos();
 
-				Direction facing = ((ItemFrameEntity) (Object) this).getHorizontalFacing();
-				int rotation = ((ItemFrameEntity) (Object) this).getRotation();
+				Direction facing = this.getHorizontalFacing();
+				int rotation = this.getRotation();
 
-				Vec3d rotatedOffset = roundVector(
-						rotateVector(offset, facing, rotation));
+				Vec3d rotatedOffset = rotateVector(offset, facing, rotation);
 
 				Vec3d finalCoord = pos.add(rotatedOffset);
 
@@ -149,6 +155,12 @@ public class ItemFrameEntitySneakUse {
 		}
 	}
 
+	@Shadow
+	public abstract ItemStack getHeldItemStack();
+
+	@Shadow
+	public abstract int getRotation();
+
 	private int getSizeFromScale(int scale) {
 		switch (scale) {
 			case 0:
@@ -169,37 +181,33 @@ public class ItemFrameEntitySneakUse {
 	private Vec3d rotateVector(Vec3d vector, Direction dir, int rotation) {
 		switch (dir) {
 			case UP:
-				vector = vector.rotateY(-ninetyDeg * rotation);
+				vector = vector.rotateY(-MathHelper.HALF_PI * rotation);
 				return vector;
 			case DOWN:
-				vector = vector.rotateZ(ninetyDeg * 2);
-				vector = vector.rotateY(ninetyDeg * 2);
-				vector = vector.rotateY(ninetyDeg * rotation);
+				vector = vector.rotateZ(MathHelper.HALF_PI * 2);
+				vector = vector.rotateY(MathHelper.HALF_PI * 2);
+				vector = vector.rotateY(MathHelper.HALF_PI * rotation);
 				return vector;
 			case NORTH:
-				vector = vector.rotateX(ninetyDeg);
-				vector = vector.rotateZ(ninetyDeg * rotation);
+				vector = vector.rotateX(MathHelper.HALF_PI);
+				vector = vector.rotateZ(MathHelper.HALF_PI * rotation);
 				return vector;
 			case SOUTH:
-				vector = vector.rotateX(-ninetyDeg);
-				vector = vector.rotateZ(ninetyDeg * rotation);
+				vector = vector.rotateX(-MathHelper.HALF_PI);
+				vector = vector.rotateZ(MathHelper.HALF_PI * rotation);
 				return vector;
 			case WEST:
-				vector = vector.rotateX(-ninetyDeg);
-				vector = vector.rotateY(-ninetyDeg);
-				vector = vector.rotateX(ninetyDeg * rotation);
+				vector = vector.rotateX(-MathHelper.HALF_PI);
+				vector = vector.rotateY(-MathHelper.HALF_PI);
+				vector = vector.rotateX(MathHelper.HALF_PI * rotation);
 				return vector;
 			case EAST:
-				vector = vector.rotateX(-ninetyDeg);
-				vector = vector.rotateY(ninetyDeg);
-				vector = vector.rotateX(ninetyDeg * rotation);
+				vector = vector.rotateX(-MathHelper.HALF_PI);
+				vector = vector.rotateY(MathHelper.HALF_PI);
+				vector = vector.rotateX(MathHelper.HALF_PI * rotation);
 				return vector;
 			default:
 				return vector;
 		}
-	}
-
-	private Vec3d roundVector(Vec3d vector) {
-		return new Vec3d(Math.round(vector.x), Math.round(vector.y), Math.round(vector.z));
 	}
 }
