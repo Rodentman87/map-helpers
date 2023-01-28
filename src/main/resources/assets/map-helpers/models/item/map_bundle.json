@@ -1,0 +1,14 @@
+{
+	"parent": "item/generated",
+	"textures": {
+		"layer0": "map-helpers:item/map_bundle"
+	},
+	"overrides": [
+		{
+			"predicate": {
+				"bundled": 1
+			},
+			"model": "map-helpers:item/map_bundle_filled"
+		}
+	]
+}

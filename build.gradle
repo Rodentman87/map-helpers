@@ -1,6 +1,9 @@
+import com.modrinth.minotaur.dependencies.ModDependency
+
 plugins {
 	id 'fabric-loom' version '1.0-SNAPSHOT'
 	id 'maven-publish'
+	id 'com.modrinth.minotaur' version '2.+'
 }
 
 sourceCompatibility = JavaVersion.VERSION_17
@@ -25,7 +28,7 @@ dependencies {
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+	 modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
 	// Uncomment the following line to enable the deprecated Fabric API modules. 
 	// These are included in the Fabric API production distribution and allow you to update your mod to the latest modules at a later more convenient time.
@@ -74,4 +77,15 @@ publishing {
 		// The repositories here will be used for publishing your artifact, not for
 		// retrieving dependencies.
 	}
+}
+
+modrinth {
+	token = System.getenv('$MODRINTH_TOKEN')
+	projectId = '9yTvqKGQ'
+	uploadFile = remapJar
+	gameVersions = ['1.19.3']
+	loaders = ['fabric']
+	dependencies = [
+			new ModDependency('P7dR8mSH', 'required')
+	]
 }

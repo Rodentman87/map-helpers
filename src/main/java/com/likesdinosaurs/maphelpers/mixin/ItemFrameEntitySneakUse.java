@@ -8,6 +8,10 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import com.likesdinosaurs.maphelpers.MapHelpers;
+import com.likesdinosaurs.maphelpers.MapHelpersMathHelper;
+import com.likesdinosaurs.maphelpers.item.MapBundle;
+
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -24,7 +28,6 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.event.GameEvent;
@@ -72,8 +75,8 @@ public abstract class ItemFrameEntitySneakUse extends AbstractDecorationEntity {
 				int xDiff = handMapState.centerX - frameMapState.centerX;
 				int zDiff = handMapState.centerZ - frameMapState.centerZ;
 
-				int xMapDiff = xDiff / getSizeFromScale(handMapState.scale);
-				int zMapDiff = zDiff / getSizeFromScale(handMapState.scale);
+				int xMapDiff = xDiff / MapHelpersMathHelper.getSizeFromScale(handMapState.scale);
+				int zMapDiff = zDiff / MapHelpersMathHelper.getSizeFromScale(handMapState.scale);
 
 				if (Math.abs(xMapDiff) > 5 || Math.abs(zMapDiff) > 5) {
 					player.sendMessage(Text.literal("These maps are too far apart"), true);
@@ -88,7 +91,7 @@ public abstract class ItemFrameEntitySneakUse extends AbstractDecorationEntity {
 				Direction facing = this.getHorizontalFacing();
 				int rotation = this.getRotation();
 
-				Vec3d rotatedOffset = rotateVector(offset, facing, rotation);
+				Vec3d rotatedOffset = MapHelpersMathHelper.rotateVector(offset, facing, rotation);
 
 				Vec3d finalCoord = pos.add(rotatedOffset);
 
@@ -152,6 +155,12 @@ public abstract class ItemFrameEntitySneakUse extends AbstractDecorationEntity {
 					}
 				}
 			}
+		} else if (itemStack.isOf(MapHelpers.MAP_BUNDLE)) {
+			boolean result = MapBundle.useOnItemFrame(((ItemFrameEntity) (Object) this), itemStack);
+			if (result) {
+				info.setReturnValue(ActionResult.SUCCESS);
+				return;
+			}
 		}
 	}
 
@@ -160,54 +169,4 @@ public abstract class ItemFrameEntitySneakUse extends AbstractDecorationEntity {
 
 	@Shadow
 	public abstract int getRotation();
-
-	private int getSizeFromScale(int scale) {
-		switch (scale) {
-			case 0:
-				return 128;
-			case 1:
-				return 256;
-			case 2:
-				return 512;
-			case 3:
-				return 1024;
-			case 4:
-				return 2048;
-			default:
-				return 128;
-		}
-	}
-
-	private Vec3d rotateVector(Vec3d vector, Direction dir, int rotation) {
-		switch (dir) {
-			case UP:
-				vector = vector.rotateY(-MathHelper.HALF_PI * rotation);
-				return vector;
-			case DOWN:
-				vector = vector.rotateZ(MathHelper.HALF_PI * 2);
-				vector = vector.rotateY(MathHelper.HALF_PI * 2);
-				vector = vector.rotateY(MathHelper.HALF_PI * rotation);
-				return vector;
-			case NORTH:
-				vector = vector.rotateX(MathHelper.HALF_PI);
-				vector = vector.rotateZ(MathHelper.HALF_PI * rotation);
-				return vector;
-			case SOUTH:
-				vector = vector.rotateX(-MathHelper.HALF_PI);
-				vector = vector.rotateZ(MathHelper.HALF_PI * rotation);
-				return vector;
-			case WEST:
-				vector = vector.rotateX(-MathHelper.HALF_PI);
-				vector = vector.rotateY(-MathHelper.HALF_PI);
-				vector = vector.rotateX(MathHelper.HALF_PI * rotation);
-				return vector;
-			case EAST:
-				vector = vector.rotateX(-MathHelper.HALF_PI);
-				vector = vector.rotateY(MathHelper.HALF_PI);
-				vector = vector.rotateX(MathHelper.HALF_PI * rotation);
-				return vector;
-			default:
-				return vector;
-		}
-	}
 }

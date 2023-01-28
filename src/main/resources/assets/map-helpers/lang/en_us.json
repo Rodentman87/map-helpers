@@ -1,0 +1,6 @@
+{
+	"item.map-helpers.map_bundle": "Map Bundle",
+	"item.map-helpers.map_bundle.tooltip": "Contains %d maps",
+	"item.map-helpers.map_bundle.tooltip2": "Click an item frame with a map to bundle it",
+	"item.map-helpers.map_bundle.failed": "Failed to place bundle, there's blocks in the way or no blocks to place on"
+}
