@@ -7,20 +7,14 @@ import net.minecraft.util.math.Vec3d;
 
 public class MapHelpersMathHelper {
 	public static int getSizeFromScale(int scale) {
-		switch (scale) {
-			case 0:
-				return 128;
-			case 1:
-				return 256;
-			case 2:
-				return 512;
-			case 3:
-				return 1024;
-			case 4:
-				return 2048;
-			default:
-				return 128;
-		}
+		return switch (scale) {
+			case 0 -> 128;
+			case 1 -> 256;
+			case 2 -> 512;
+			case 3 -> 1024;
+			case 4 -> 2048;
+			default -> 128;
+		};
 	}
 
 	public static Vec3d roundVec3d(Vec3d vec3d) {
@@ -39,68 +33,83 @@ public class MapHelpersMathHelper {
 
 	public static Vec3d rotateVector(Vec3d vector, Direction dir, int rotation) {
 		switch (dir) {
-			case UP:
-				vector = vector.rotateY(-MathHelper.HALF_PI * 2);
+			case UP -> {
 				vector = vector.rotateY(-MathHelper.HALF_PI * rotation);
 				return vector;
-			case DOWN:
+			}
+			case DOWN -> {
 				vector = vector.rotateZ(MathHelper.HALF_PI * 2);
+				vector = vector.rotateY(MathHelper.HALF_PI * 2);
 				vector = vector.rotateY(MathHelper.HALF_PI * rotation);
 				return vector;
-			case NORTH:
+			}
+			case NORTH -> {
 				vector = vector.rotateX(MathHelper.HALF_PI);
+				vector = vector.rotateZ(MathHelper.HALF_PI * 2);
 				vector = vector.rotateZ(MathHelper.HALF_PI * rotation);
 				return vector;
-			case SOUTH:
+			}
+			case SOUTH -> {
 				vector = vector.rotateX(-MathHelper.HALF_PI);
-				vector = vector.rotateZ(MathHelper.HALF_PI * (rotation + 2));
+				vector = vector.rotateZ(MathHelper.HALF_PI * rotation);
 				return vector;
-			case WEST:
+			}
+			case WEST -> {
 				vector = vector.rotateX(-MathHelper.HALF_PI);
 				vector = vector.rotateY(-MathHelper.HALF_PI);
-				vector = vector.rotateX(MathHelper.HALF_PI * (rotation + 2));
+				vector = vector.rotateX(MathHelper.HALF_PI * rotation);
 				return vector;
-			case EAST:
+			}
+			case EAST -> {
 				vector = vector.rotateX(-MathHelper.HALF_PI);
 				vector = vector.rotateY(MathHelper.HALF_PI);
-				vector = vector.rotateX(MathHelper.HALF_PI * (rotation + 2));
+				vector = vector.rotateX(MathHelper.HALF_PI * rotation);
 				return vector;
-			default:
+			}
+			default -> {
 				return vector;
+			}
 		}
 	}
 
 	public static Vec3d unrotateVector(Vec3d vector, Direction dir, int rotation) {
 		switch (dir) {
-			case UP:
+			case UP -> {
 				vector = vector.rotateY(MathHelper.HALF_PI * rotation);
 				return vector;
-			case DOWN:
+			}
+			case DOWN -> {
 				vector = vector.rotateY(-MathHelper.HALF_PI * rotation);
 				vector = vector.rotateY(-MathHelper.HALF_PI * 2);
 				vector = vector.rotateZ(-MathHelper.HALF_PI * 2);
 				return vector;
-			case NORTH:
+			}
+			case NORTH -> {
 				vector = vector.rotateZ(-MathHelper.HALF_PI * rotation);
 				vector = vector.rotateZ(-MathHelper.HALF_PI * 2);
 				vector = vector.rotateX(-MathHelper.HALF_PI);
 				return vector;
-			case SOUTH:
+			}
+			case SOUTH -> {
 				vector = vector.rotateZ(-MathHelper.HALF_PI * rotation);
 				vector = vector.rotateX(MathHelper.HALF_PI);
 				return vector;
-			case WEST:
+			}
+			case WEST -> {
 				vector = vector.rotateX(-MathHelper.HALF_PI * rotation);
 				vector = vector.rotateY(MathHelper.HALF_PI);
 				vector = vector.rotateX(MathHelper.HALF_PI);
 				return vector;
-			case EAST:
+			}
+			case EAST -> {
 				vector = vector.rotateX(-MathHelper.HALF_PI * rotation);
 				vector = vector.rotateY(-MathHelper.HALF_PI);
 				vector = vector.rotateX(MathHelper.HALF_PI);
 				return vector;
-			default:
+			}
+			default -> {
 				return vector;
+			}
 		}
 	}
 }

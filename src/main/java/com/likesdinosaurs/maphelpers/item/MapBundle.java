@@ -5,7 +5,9 @@ import java.util.*;
 import com.likesdinosaurs.maphelpers.MapHelpers;
 import com.likesdinosaurs.maphelpers.MapHelpersMathHelper;
 
+import com.likesdinosaurs.maphelpers.tooltip.MapBundleTooltipComponent;
 import net.minecraft.client.item.TooltipContext;
+import net.minecraft.client.item.TooltipData;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.decoration.ItemFrameEntity;
 import net.minecraft.item.FilledMapItem;
@@ -39,6 +41,11 @@ public class MapBundle extends Item {
 	}
 
 	@Override
+	public Optional<TooltipData> getTooltipData(ItemStack stack) {
+		return MapBundleTooltipComponent.of(stack).or(() -> super.getTooltipData(stack));
+	}
+
+	@Override
 	public ActionResult useOnBlock(ItemUsageContext context) {
 		ItemStack stack = context.getStack();
 		if (context.getWorld().isClient) {
@@ -69,7 +76,7 @@ public class MapBundle extends Item {
 			int[] offset = entry.getValue();
 			// Calculate the final coordinates
 			Vec3d original = new Vec3d(offset[0], 0, offset[1]);
-			Vec3d rotated = MapHelpersMathHelper.rotateVector(original, direction, rotation);
+			Vec3d rotated = MapHelpersMathHelper.rotateVector(original, direction, rotation - 2);
 			BlockPos finalPos = new BlockPos(blockVec.add(rotated));
 			ItemFrameEntity frame = new ItemFrameEntity(context.getWorld(), new BlockPos(finalPos), direction);
 			if (frame.canStayAttached()) {
@@ -101,6 +108,53 @@ public class MapBundle extends Item {
 		nbt.putInt("MapCount", 0);
 		nbt.remove("Rotation");
 		return ActionResult.PASS;
+	}
+
+	public static int[] getSize(ItemStack stack) {
+		NbtCompound nbt = stack.getOrCreateNbt();
+		if (nbt.contains("MapCount") && nbt.getInt("MapCount") == 0) {
+			return new int[] { 0, 0, 0, 0 };
+		}
+		int minX = 0;
+		int maxX = 0;
+		int minZ = 0;
+		int maxZ = 0;
+		for (String key : nbt.getKeys()) {
+			if (!key.startsWith("map-"))
+				continue;
+			int[] offset = nbt.getIntArray(key);
+			if (offset[0] < minX)
+				minX = offset[0];
+			if (offset[0] > maxX)
+				maxX = offset[0];
+			if (offset[1] < minZ)
+				minZ = offset[1];
+			if (offset[1] > maxZ)
+				maxZ = offset[1];
+		}
+		return new int[] { minX, maxX, minZ, maxZ };
+	}
+
+	public static int getMapCount(ItemStack stack) {
+		int mapCount = 0;
+		if (stack.hasNbt() && stack.getNbt().contains("MapCount")) {
+			mapCount = stack.getNbt().getInt("MapCount");
+		}
+		return mapCount;
+	}
+
+	public static Map<Integer, int[]> getOffsets(ItemStack stack) {
+		NbtCompound nbt = stack.getOrCreateNbt();
+		if (nbt.contains("MapCount") && nbt.getInt("MapCount") == 0) {
+			return new HashMap<>();
+		}
+		Map<Integer, int[]> offsets = new HashMap<Integer, int[]>();
+		nbt.getKeys().stream().filter(key -> key.startsWith("map-")).forEach(key -> {
+			int mapId = Integer.parseInt(key.substring(4));
+			int[] offset = nbt.getIntArray(key);
+			offsets.put(mapId, offset);
+		});
+		return offsets;
 	}
 
 	private static ItemStack createMapFromId(int mapId, World world) {
@@ -139,8 +193,8 @@ public class MapBundle extends Item {
 						MapHelpers.LOGGER.info("Wrong facing");
 						return false;
 					}
-					if (frame.getRotation() != itemFrame.getRotation()) {
-						MapHelpers.LOGGER.info("Wrong rotation");
+					if ((frame.getRotation() % 4) != (itemFrame.getRotation() % 4)) {
+						MapHelpers.LOGGER.info("Wrong rotation, " + frame.getRotation() + " vs " + itemFrame.getRotation());
 						return false;
 					}
 					if (frame.getHeldItemStack().isEmpty()) {

@@ -80,11 +80,14 @@ publishing {
 }
 
 modrinth {
+	BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 	token = System.getenv('$MODRINTH_TOKEN')
 	projectId = '9yTvqKGQ'
 	uploadFile = remapJar
 	gameVersions = ['1.19.3']
 	loaders = ['fabric']
+	System.out.println("Enter changelog:");
+  changelog = br.readLine();
 	dependencies = [
 			new ModDependency('P7dR8mSH', 'required')
 	]

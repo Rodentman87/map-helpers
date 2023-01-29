@@ -2,6 +2,8 @@ package com.likesdinosaurs.maphelpers.mixin;
 
 import java.util.List;
 
+import net.minecraft.entity.EntityDimensions;
+import net.minecraft.entity.EntityPose;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -145,12 +147,11 @@ public abstract class ItemFrameEntitySneakUse extends AbstractDecorationEntity {
 								frame.setHeldItemStack(itemStack.copy());
 								frame.setRotation(rotation);
 								info.setReturnValue(ActionResult.SUCCESS);
-								return;
 							} else {
 								player.sendMessage(Text.literal("Can't place item frame on block"), true);
 								info.setReturnValue(ActionResult.FAIL);
-								return;
 							}
+							return;
 						}
 					}
 				}
@@ -169,4 +170,6 @@ public abstract class ItemFrameEntitySneakUse extends AbstractDecorationEntity {
 
 	@Shadow
 	public abstract int getRotation();
+
+
 }
